@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--png', action='store_true', help='Save the plots as png in addition to the default pdf.')
     parser.add_argument('--events', type=int, help='Select how many events are plotted starting with the first event. Default is 100 events. 0 for all events', default=100)
     parser.add_argument('--event_offset', type=int, help='Selects the first event that is plotted (Counting starts at 0). Default is 0.', default=0)
+    parser.add_argument('--plot3d', action='store_true', help='Add two additional plots in xz and yz projection. Only works with Timepix3 data.')
     parser.add_argument('runpath', type=str, help='Path to the hdf5 file')
 
     args = parser.parse_args()
@@ -30,6 +31,10 @@ def main():
     filename = datafile.replace('.h5', '')
 
     timepix_version = f['reconstruction'].attrs['TimepixVersion'][0].decode('utf-8')
+
+    if timepix_version == 'Timepix1' and args.plot3d:
+        print('The `plot3d` option works only with Timepix3 data - ignoring it.')
+
     reconstruction = f['reconstruction']
     for name in reconstruction:
         # Load the x and y coordinates of the pixel with the option to rotate
@@ -52,7 +57,10 @@ def main():
         except:
             charge = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
 
-        fig, ax = plt.subplots()
+        if args.plot3d and timepix_version == 'Timepix3':
+            fig, (ax, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+        else:
+            fig, ax = plt.subplots()
 
         # Create a new folder based on the filename of the run
         direc = filename + "/Events"
@@ -77,8 +85,8 @@ def main():
 
                 line_length = 20
                 ax.cla()
-                plt.xlabel('x [pixel]')
-                plt.ylabel('y [pixel]')
+                ax.set_xlabel('x [pixel]')
+                ax.set_ylabel('y [pixel]')
                 
                 # Calculate the limits of the axis, results in a quadratic range
                 if np.max(posx_raw[event]) - np.min(posx_raw[event]) > np.max(posy_raw[event]) - np.min(posy_raw[event]):
@@ -131,6 +139,51 @@ def main():
                 # Set the aspect ratio for a quadratic plot
                 ax.set_aspect('equal', adjustable='box')
                 ax.grid(True)
+
+                if args.plot3d and timepix_version == 'Timepix3':
+                    ax2.cla()
+                    ax3.cla()
+                    posz_raw = ((toa[event] * 25 + 1) - ftoa[event] * 1.5625)#*velocity/55.
+
+                    center_z_all = np.average(posz_raw, weights=charge[event])
+                    center_z_start = np.average(posz_raw[start_indices[event].astype(int)], weights=charge[event][start_indices[event].astype(int)])
+                    # Plot the center of charge of all pixels
+                    ax2.scatter(center_x_all, center_z_all, color='red', label="Center of charge", marker='o', s=40)
+
+                    # Plot the center of charge for the start pixels
+                    ax2.scatter(center_x_start, center_z_start, color='green', label="Center of charge", marker='o', s=40)
+                    ax2.scatter(posx_raw[event][start_indices[event].astype(int)], posz_raw[start_indices[event].astype(int)], color='black', marker='s', s=2)
+                    ax2.scatter(posx_raw[event][end_indices[event].astype(int)], posz_raw[end_indices[event].astype(int)], color='blue', marker='s', s=2)
+
+                    ax2.set_xlabel('x [pixel]')
+                    ax2.set_ylabel('z [ns]')
+                    ax2.grid(True)
+
+                    ax3.scatter(center_y_all, center_z_all, color='red', label="Center of charge", marker='o', s=40)
+
+                    # Plot the center of charge for the start pixels
+                    ax3.scatter(center_y_start, center_z_start, color='green', label="Center of charge", marker='o', s=40)
+                    ax3.scatter(posy_raw[event][start_indices[event].astype(int)], posz_raw[start_indices[event].astype(int)], color='black', marker='s', s=2)
+                    ax3.scatter(posy_raw[event][end_indices[event].astype(int)], posz_raw[end_indices[event].astype(int)], color='blue', marker='s', s=2)
+
+                    ax3.set_xlabel('y [pixel]')
+                    ax3.set_ylabel('z [ns]')
+                    ax3.grid(True)
+
+                    # Set ranges for the plots. For x and y the same range as for the xy plot is used while for z a new is defined
+                    if np.max(posx_raw[event]) - np.min(posx_raw[event]) > np.max(posy_raw[event]) - np.min(posy_raw[event]):
+                        ax2.set_xlim(np.min(posx_raw[event]) - 20, np.max(posx_raw[event]) + 20)
+                        x_range = np.max(posx_raw[event]) - np.min(posx_raw[event])
+                        ax3.set_xlim(center_y_all - x_range/2-20, center_y_all + x_range/2+20)
+                    else:
+                        ax3.set_xlim(np.min(posy_raw[event]) - 20, np.max(posy_raw[event]) + 20)
+                        y_range = np.max(posy_raw[event]) - np.min(posy_raw[event])
+                        ax2.set_xlim(center_x_all - y_range/2-20, center_x_all + y_range/2+20)
+                    zrange = np.max(posz_raw) - np.min(posz_raw)
+                    ax2.set_ylim(np.min(posz_raw)-zrange/2, np.max(posz_raw)+zrange/2)
+                    ax3.set_ylim(np.min(posz_raw)-zrange/2, np.max(posz_raw)+zrange/2)
+
+                    plt.tight_layout()
 
                 # Save the event as a pdf
                 plt.savefig(direc + '/event-' + str(event) + '.pdf')
