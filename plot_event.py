@@ -12,8 +12,8 @@ def main():
     parser = argparse.ArgumentParser(description='Plot reconstructed polarisation angles per event')
     parser.add_argument('--pixel_size', action='store_true', help='Use a variable pixel size for plotting based on the charge per pixel.')
     parser.add_argument('--png', action='store_true', help='Save the plots as png in addition to the default pdf.')
-    parser.add_argument('--events', type=float, help='Select how many events are plotted starting with the first event. Default is 100 events. 0 for all events', default=100)
-    parser.add_argument('--event_offset', type=float, help='Selects the first event that is plotted (Counting starts at 0). Default is 0.', default=0)
+    parser.add_argument('--events', type=int, help='Select how many events are plotted starting with the first event. Default is 100 events. 0 for all events', default=100)
+    parser.add_argument('--event_offset', type=int, help='Selects the first event that is plotted (Counting starts at 0). Default is 0.', default=0)
     parser.add_argument('runpath', type=str, help='Path to the hdf5 file')
 
     args = parser.parse_args()
