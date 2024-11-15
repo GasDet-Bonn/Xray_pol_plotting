@@ -130,6 +130,7 @@ def main():
 
                 # Set the aspect ratio for a quadratic plot
                 ax.set_aspect('equal', adjustable='box')
+                ax.grid(True)
 
                 # Save the event as a pdf
                 plt.savefig(direc + '/event-' + str(event) + '.pdf')
