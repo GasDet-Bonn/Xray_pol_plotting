@@ -59,8 +59,11 @@ contains calibrated charge data in electrons this is used, otherwise the ToT is 
 ### Angles
 Plots a histogram of reconstructed photo electron angles. It can be used as follows:
 ```
-python3 plot_angles.py [-h] runpath
+python3 plot_angles.py [-h] [--png] [--fit] runpath
 ```
 The `runpath` can either be the full path to a hdf5 file but also to a folder containing
 hdf5 files. The script only works if the files contain angular data. This data can be
 reconstructed for example with [Xray_pol_reco](https://github.com/GasDet-Bonn/Xray_pol_reco).
+There are the following optional parameters:
+- `png` Save the plots as png in addition to the default pdf.
+- `fit` A cos^2 fit is performed and added to the plot.
