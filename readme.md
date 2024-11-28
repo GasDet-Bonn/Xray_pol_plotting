@@ -30,10 +30,10 @@ The `runpath` is a path to an Hdf5 file. Additionally there are the following op
 - `event_offset` Selects the first event that is plotted (Counting starts at 0). Default is 0.
 - `plot3d` Add two additional plots in xz and yz projection. Only works with Timepix3 data.
 
-### Pixelspectrum
+### Pixel spectrum
 Plots a histogram of the number of active pixels per event. It can be used as follows:
 ```
 python3 plot_pixelspectrum.py [-h] runpath
 ```
-The `runpath` can either be the full path to a hdf5 file but also to a folder contatingin
+The `runpath` can either be the full path to a hdf5 file but also to a folder containing
 hdf5 files. In the latter case a plot for each hdf5 file is generated.
