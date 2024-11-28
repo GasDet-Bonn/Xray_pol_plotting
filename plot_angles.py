@@ -12,10 +12,10 @@ def cos_squared(x, A, B, C):
 
 # Create a histogram based on a array of angles and save it
 # to the folder `direc` with the name `filename`.
-def angles(angle, direc, filename, png, fit):
+def angles(angle, direc, filename, png, fit, log):
     plt.clf()
 
-    if fit:
+    if fit or log:
         angle = angle[~np.isnan(angle)]
         counts, bin_edges = np.histogram(angle, bins=100)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
@@ -32,12 +32,18 @@ def angles(angle, direc, filename, png, fit):
 
     maximum = angle.max()
     plt.hist(angle, bins=100, range=(-np.pi, np.pi))
-    if fit:
+    if fit or log:
         plt.plot(bin_centers, cos_squared(bin_centers, A, B, C), label='Fit: A*cos^2(x) + B', color='red')
         ax = plt.gca()
         default_fontsize = ax.xaxis.get_label().get_size()
         text = f'$\mu = ({modulationfactor:.2f} \pm {modulationfactor_error:.2f}) \%$\n$\phi = ({C:.2f} \pm {C_error:.2f})$'
         plt.annotate(text, xy=(0.05, 0.05), xycoords='axes fraction', fontsize=default_fontsize, verticalalignment='bottom', bbox=dict(boxstyle='square,pad=0.5', facecolor='white'))
+        if log:
+            with open(direc + '/modulations.txt', 'a') as file:
+                file.write(filename + '\t' + str(modulationfactor) + '\t' + str(modulationfactor_error) + '\t' + str(C) + '\t' + str(C_error) + '\n')
+
+# Die Datei wird automatisch geschlossen, wenn der `with`-Block endet
+
     plt.xlabel("Reconstructed angle [rad]")
     plt.ylabel("Number of events")
     plt.xlim(-np.pi, np.pi)
@@ -52,6 +58,7 @@ def main():
     parser.add_argument('runpath', type=str, help='Path to the hdf5 file or a folder containing multiple hdf5 files')
     parser.add_argument('--png', action='store_true', help='Save the plots as png in addition to the default pdf.')
     parser.add_argument('--fit', action='store_true', help='Perform a cos^2 fit to the data.')
+    parser.add_argument('--log', action='store_true', help='Write modulation factor and angle to a log file. Also activates the fit.')
     args = parser.parse_args()
 
     run = args.runpath
@@ -71,7 +78,7 @@ def main():
                 angle = f.get('reconstruction/' + name + '/chip_0/angle_secondstage')[:]
             except:
                 print("No angles found - please perform the angular reconstruction")
-            angles(angle, direc, filename, args.png, args.fit)
+            angles(angle, direc, filename, args.png, args.fit, args.log)
     # Plotting if a folder with files is provided
     elif os.path.isdir(run):
         print("Plotting the spectra for all hdf5 files in the folder")
@@ -94,7 +101,7 @@ def main():
                         angle = f.get('reconstruction/' + name + '/chip_0/angle_secondstage')[:]
                     except:
                         print("No angles found - please perform the angular reconstruction for file", filename)
-                    angles(angle, direc, filename, args.png, args.fit)
+                    angles(angle, direc, filename, args.png, args.fit, args.log)
     else:
         print("Please choose a correct data file or folder")    
 
