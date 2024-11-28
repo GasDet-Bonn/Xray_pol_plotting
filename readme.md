@@ -55,3 +55,12 @@ python3 plot_chargeperpixel.py [-h] runpath
 The `runpath` can either be the full path to a hdf5 file but also to a folder containing
 hdf5 files. In the latter case a plot for each hdf5 file is generated. If a hdf5 file
 contains calibrated charge data in electrons this is used, otherwise the ToT is used.
+
+### Angles
+Plots a histogram of reconstructed photo electron angles. It can be used as follows:
+```
+python3 plot_angles.py [-h] runpath
+```
+The `runpath` can either be the full path to a hdf5 file but also to a folder containing
+hdf5 files. The script only works if the files contain angular data. This data can be
+reconstructed for example with [Xray_pol_reco](https://github.com/GasDet-Bonn/Xray_pol_reco).
