@@ -21,6 +21,7 @@ def main():
     # Get the arguments
     parser = argparse.ArgumentParser(description='Plot the pixelspectra (active pixels per event)')
     parser.add_argument('runpath', type=str, help='Path to the hdf5 file or a folder containing multiple hdf5 files')
+    parser.add_argument('--ecc', type=float, help='Selects a cut as a lower bound on the eccentricity of the event. The default is 1', default=1)
     args = parser.parse_args()
 
     run = args.runpath
@@ -37,6 +38,10 @@ def main():
         reconstruction = f['reconstruction']
         for name in reconstruction:
             hits = f.get('reconstruction/' + name + '/chip_0/hits')[:]
+            ecc = f.get('reconstruction/' + name + '/chip_0/eccentricity')[:]
+            if args.ecc > 1:
+                hits = hits[ecc > args.ecc]
+                filename = filename + '_ecc' + str(args.ecc)
             pixelspectrum(hits, direc, filename)
     # Plotting if a folder with files is provided
     elif os.path.isdir(run):
@@ -56,7 +61,11 @@ def main():
                 timepix_version = f['reconstruction'].attrs['TimepixVersion'][0].decode('utf-8')
                 reconstruction = f['reconstruction']
                 for name in reconstruction:
-                    hits = f.get('reconstruction/' + name + '/chip_0/hits')[:]
+                    hits = f.get('runs/' + name + '/chip_0/Hits')[:]
+                    ecc = f.get('reconstruction/' + name + '/chip_0/eccentricity')[:]
+                    if args.ecc > 1:
+                        hits = hits[ecc > args.ecc]
+                        filename = filename + '_ecc' + str(args.ecc)
                     pixelspectrum(hits, direc, filename)
     else:
         print("Please choose a correct data file or folder")    
