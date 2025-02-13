@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 # Create a histogram based on a array of hits per event and save it
 # to the folder `direc` with the name `filename`.
 def pixelspectrum(hits, direc, filename):
-    # Definition der Abbildungsgröße
+    # Definition of the plot size
     fig_width, fig_height = 7, 6  # in inches
 
-    # Anpassung der Schriftgröße relativ zur Abbildungsgröße
-    font_size = fig_height * 2  # Beispiel: 2 mal die Breite der Figur
+    # Relative font size
+    font_size = fig_height * 2
 
-    # Einstellung von rcParams für konsistente Schriftgröße
+    # Set font size
     plt.rcParams.update({
         'font.size': font_size,
         'axes.titlesize': font_size,
