@@ -20,8 +20,15 @@ def angles(angle, direc, filename, png, fit, log):
         counts, bin_edges = np.histogram(angle, bins=100)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
 
-        params, covariance = curve_fit(cos_squared, bin_centers, counts, bounds=([0, 0, -np.pi], [np.inf, np.inf, np.pi]), maxfev=10000)
+        errors = np.sqrt(counts)
+
+        params, covariance = curve_fit(cos_squared, bin_centers, counts, bounds=([0, 0, -np.pi], [np.inf, np.inf, np.pi]), maxfev=1000000)
         A, B, C = params
+
+        expected_counts = cos_squared(bin_centers, *params)
+        chi_square = np.sum(((counts - expected_counts) ** 2) / errors ** 2)
+        dof = len(counts) - len(params)
+        reduced_chi_square = chi_square / dof
 
         errors = np.sqrt(np.diag(covariance))
         A_error, B_error, C_error = errors
@@ -37,12 +44,9 @@ def angles(angle, direc, filename, png, fit, log):
         ax = plt.gca()
         default_fontsize = ax.xaxis.get_label().get_size()
         text = f'$\mu = ({modulationfactor:.2f} \pm {modulationfactor_error:.2f}) \%$\n$\phi = ({C:.2f} \pm {C_error:.2f})$'
-        plt.annotate(text, xy=(0.05, 0.05), xycoords='axes fraction', fontsize=default_fontsize, verticalalignment='bottom', bbox=dict(boxstyle='square,pad=0.5', facecolor='white'))
         if log:
             with open(direc + '/modulations.txt', 'a') as file:
-                file.write(filename + '\t' + str(modulationfactor) + '\t' + str(modulationfactor_error) + '\t' + str(C) + '\t' + str(C_error) + '\n')
-
-# Die Datei wird automatisch geschlossen, wenn der `with`-Block endet
+                file.write(filename + '\t' + str(modulationfactor) + '\t' + str(modulationfactor_error) + '\t' + str(C) + '\t' + str(C_error) + '\t' + str(efficiency) + '\t' + str(reduced_chi_square) + '\t' + str(len(angle)) + '\n')
 
     plt.xlabel("Reconstructed angle [rad]")
     plt.ylabel("Number of events")
