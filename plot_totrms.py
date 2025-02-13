@@ -13,16 +13,15 @@ def gauss(x, mu, sigma, A):
 def rms(arr):
     return np.sqrt(np.mean(np.square(arr)))
 
-# Create a histogram based on a array of total charge per event and save it
-# to the folder `direc` with the name `filename`.
+# Create a histogram and save it to the folder `direc` with the name `filename`.
 def totrms(charge, direc, filename, fit=False):
-    # Definition der Abbildungsgröße
+    # Definition of the plot size
     fig_width, fig_height = 7, 6  # in inches
 
-    # Anpassung der Schriftgröße relativ zur Abbildungsgröße
-    font_size = fig_height * 2  # Beispiel: 2 mal die Breite der Figur
+    # Relative font size
+    font_size = fig_height * 2
 
-    # Einstellung von rcParams für konsistente Schriftgröße
+    # Set font size
     plt.rcParams.update({
         'font.size': font_size,
         'axes.titlesize': font_size,
