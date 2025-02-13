@@ -9,13 +9,32 @@ import matplotlib.pyplot as plt
 # Create a histogram based on a array of hits per event and save it
 # to the folder `direc` with the name `filename`.
 def pixelspectrum(hits, direc, filename):
+    # Definition der Abbildungsgröße
+    fig_width, fig_height = 7, 6  # in inches
+
+    # Anpassung der Schriftgröße relativ zur Abbildungsgröße
+    font_size = fig_height * 2  # Beispiel: 2 mal die Breite der Figur
+
+    # Einstellung von rcParams für konsistente Schriftgröße
+    plt.rcParams.update({
+        'font.size': font_size,
+        'axes.titlesize': font_size,
+        'axes.labelsize': font_size,
+        'xtick.labelsize': font_size,
+        'ytick.labelsize': font_size,
+        'legend.fontsize': font_size,
+    })
+
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    ax.cla()
+    #maximum = hits.max()
     plt.clf()
     maximum = hits.max()
-    plt.hist(hits, bins=int(maximum*1.1)+1, range=(0, maximum*1.1))
-    plt.xlabel("Active pixels per event")
-    plt.ylabel("Number of events")
-    plt.grid(True)
-    plt.savefig(direc + '/' + str(filename) + '.pdf')
+    ax.hist(hits, bins=int(maximum*1.1)+1, range=(0, maximum*1.1))
+    ax.set_xlabel("Active pixels per event")
+    ax.set_ylabel("Number of events")
+    ax.grid(True)
+    plt.savefig(direc + '/' + str(filename) + '.pdf', bbox_inches='tight', pad_inches=0.08)
 
 def main():
     # Get the arguments
