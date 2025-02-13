@@ -12,7 +12,7 @@ def cos_squared(x, A, B, C):
 
 # Create a histogram based on a array of angles and save it
 # to the folder `direc` with the name `filename`.
-def angles(angle, direc, filename, png, fit, log):
+def angles(angle, charge, charge_tot, direc, filename, png, fit, log, efficiency):
     plt.clf()
 
     if fit or log:
@@ -44,6 +44,7 @@ def angles(angle, direc, filename, png, fit, log):
         ax = plt.gca()
         default_fontsize = ax.xaxis.get_label().get_size()
         text = f'$\mu = ({modulationfactor:.2f} \pm {modulationfactor_error:.2f}) \%$\n$\phi = ({C:.2f} \pm {C_error:.2f})$'
+        plt.annotate(text, xy=(0.05, 0.05), xycoords='axes fraction', fontsize=default_fontsize, verticalalignment='bottom', bbox=dict(boxstyle='square,pad=0.5', facecolor='white'))
         if log:
             with open(direc + '/modulations.txt', 'a') as file:
                 file.write(filename + '\t' + str(modulationfactor) + '\t' + str(modulationfactor_error) + '\t' + str(C) + '\t' + str(C_error) + '\t' + str(efficiency) + '\t' + str(reduced_chi_square) + '\t' + str(len(angle)) + '\n')
@@ -58,11 +59,12 @@ def angles(angle, direc, filename, png, fit, log):
 
 def main():
     # Get the arguments
-    parser = argparse.ArgumentParser(description='Plot the pixelspectra (active pixels per event)')
+    parser = argparse.ArgumentParser(description='Plot a histogram of reconstructed angles')
     parser.add_argument('runpath', type=str, help='Path to the hdf5 file or a folder containing multiple hdf5 files')
     parser.add_argument('--png', action='store_true', help='Save the plots as png in addition to the default pdf.')
     parser.add_argument('--fit', action='store_true', help='Perform a cos^2 fit to the data.')
     parser.add_argument('--log', action='store_true', help='Write modulation factor and angle to a log file. Also activates the fit.')
+    parser.add_argument('--ecc', type=float, help='Selects a cut as a lower bound on the eccentricity of the event. The default is 1', default=1)
     args = parser.parse_args()
 
     run = args.runpath
@@ -80,9 +82,28 @@ def main():
         for name in reconstruction:
             try:
                 angle = f.get('reconstruction/' + name + '/chip_0/angle_secondstage')[:]
+                ecc = f.get('reconstruction/' + name + '/chip_0/eccentricity')[:]
+                efficiency = 1
+                if args.ecc > 1:
+                    events = len(angle)
+                    angle = angle[ecc > args.ecc]
+                    cut = len(angle)
+                    efficiency = cut/events
+                    filename = filename + '_ecc' + str(args.ecc)
             except:
                 print("No angles found - please perform the angular reconstruction")
-            angles(angle, direc, filename, args.png, args.fit, args.log)
+                continue
+            try:
+                charge = f.get('reconstruction/' + name + '/chip_0/charge')[:]
+                charge_tot = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
+            except:
+                charge = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
+                charge_tot = charge
+            try:
+                angles(angle, charge, charge_tot, direc, filename, args.png, args.fit, args.log, efficiency)
+            except:
+                print('Error in: ', filename)
+                continue
     # Plotting if a folder with files is provided
     elif os.path.isdir(run):
         print("Plotting the spectra for all hdf5 files in the folder")
@@ -103,9 +124,28 @@ def main():
                 for name in reconstruction:
                     try:
                         angle = f.get('reconstruction/' + name + '/chip_0/angle_secondstage')[:]
+                        ecc = f.get('reconstruction/' + name + '/chip_0/eccentricity')[:]
+                        efficiency = 1
+                        if args.ecc:
+                            events = len(angle)
+                            angle = angle[ecc > args.ecc]
+                            cut = len(angle)
+                            efficiency = cut/events
+                            filename = filename + '_ecc' + str(args.ecc)
                     except:
                         print("No angles found - please perform the angular reconstruction for file", filename)
-                    angles(angle, direc, filename, args.png, args.fit, args.log)
+                        continue
+                    try:
+                        charge = f.get('reconstruction/' + name + '/chip_0/charge')[:]
+                        charge_tot = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
+                    except:
+                        charge = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
+                        charge_tot = charge
+                    try:
+                        angles(angle, charge, charge_tot, direc, filename, args.png, args.fit, args.log, efficiency)
+                    except:
+                        print('Error in: ', filename)
+                        continue
     else:
         print("Please choose a correct data file or folder")    
 
