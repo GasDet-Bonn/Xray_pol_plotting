@@ -1,2 +1,8 @@
-# Ignore all subfolders
+# Subfolders
 **/
+
+# Scripts
+*.sh
+
+# txt outputs
+*.txt
