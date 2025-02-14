@@ -108,13 +108,13 @@ def main():
         timepix_version = f['reconstruction'].attrs['TimepixVersion'][0].decode('utf-8')
         reconstruction = f['reconstruction']
         for name in reconstruction:
-            start_infices = f.get('reconstruction/' + name + '/chip_0/start_indices')[:]
+            start_indices = f.get('reconstruction/' + name + '/chip_0/start_indices')[:]
             try:
                 charge = f.get('reconstruction/' + name + '/chip_0/charge')[:]
                 electrons = True
             except:
                 charge = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
-            filtered_charge = [arr[indices.astype(int)] for arr, indices in zip(charge, start_infices)]
+            filtered_charge = [arr[indices.astype(int)] for arr, indices in zip(charge, start_indices)]
             filtered_charge = [arr for arr in filtered_charge if len(arr) > 0]
             chargeperpixel(filtered_charge, direc, filename, electrons)
     # Plotting if a folder with files is provided
@@ -135,13 +135,13 @@ def main():
                 timepix_version = f['reconstruction'].attrs['TimepixVersion'][0].decode('utf-8')
                 reconstruction = f['reconstruction']
                 for name in reconstruction:
-                    start_infices = f.get('reconstruction/' + name + '/chip_0/start_indices')[:]
+                    start_indices = f.get('reconstruction/' + name + '/chip_0/start_indices')[:]
                     try:
                         charge = f.get('reconstruction/' + name + '/chip_0/charge')[:]
                         electrons = True
                     except:
                         charge = f.get('reconstruction/' + name + '/chip_0/ToT')[:]
-                    filtered_charge = [arr[indices.astype(int)] for arr, indices in zip(charge, start_infices)]
+                    filtered_charge = [arr[indices.astype(int)] for arr, indices in zip(charge, start_indices)]
                     filtered_charge = [arr for arr in filtered_charge if len(arr) > 1]
                     chargeperpixel(filtered_charge, direc, filename, electrons)
     else:
