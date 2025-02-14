@@ -33,7 +33,7 @@ def radius(rad, direc, filename):
 
 def main():
     # Get the arguments
-    parser = argparse.ArgumentParser(description='Plot plot the distance of the center of charge from the beam spot')
+    parser = argparse.ArgumentParser(description='Plots a histogram of the distance of hits to the center of charge of an event')
     parser.add_argument('runpath', type=str, help='Path to the hdf5 file or a folder containing multiple hdf5 files')
     args = parser.parse_args()
 
